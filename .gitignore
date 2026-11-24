@@ -1,0 +1,13 @@
+node_modules/
+
+.env
+.env.*
+!.env.example
+
+*.log
+npm-debug.log*
+*.local
+.DS_Store
+Thumbs.db
+
+/Final Exam.zip
