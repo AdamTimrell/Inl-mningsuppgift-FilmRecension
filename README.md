@@ -8,15 +8,63 @@ The API uses JavaScript, Express, and MySQL through `mysql2`. It uses bcrypt to 
 
 Use Node.js 24 with npm and MySQL 8 with the `mysql` command-line client.
 
-## Install and configure
+## Install Node.js and MySQL
 
-Run this from the project folder.
+### Windows
+
+1. Run the Windows `.msi` for Node.js 24. Keep npm and the PATH option enabled. [Node.js downloads](https://nodejs.org/en/download)
+2. Run the MySQL Community Server 8.4 MSI. In MySQL Configurator, set a MySQL `root` password, keep port `3306` if available, and configure MySQL as a Windows service. [MySQL downloads](https://dev.mysql.com/downloads/mysql/8.4.html) · [MySQL Configurator guide](https://dev.mysql.com/doc/refman/8.4/en/mysql-configurator-workflow-server.html)
+3. If the service is stopped, open **Services** (`services.msc`) and start the service you named in MySQL Configurator. Add the MySQL `bin` folder (usually `C:\Program Files\MySQL\MySQL Server 8.4\bin`) to your `Path` environment variable and open a new Command Prompt. [MySQL Windows service guide](https://dev.mysql.com/doc/refman/8.4/en/windows-start-service.html)
+
+### macOS (Homebrew)
+
+If needed, install Homebrew and follow the installer's steps to add `brew` to your PATH. [Homebrew installation guide](https://docs.brew.sh/Installation)
+
+Install Node.js with npm and MySQL, add their commands to your terminal's PATH, and start MySQL. To keep the PATH change in new terminals, add the `export` line to `~/.zshrc` if you use the default zsh shell. [Node.js formula](https://formulae.brew.sh/formula/node@24) · [MySQL formula](https://formulae.brew.sh/formula/mysql@8.4)
 
 ```sh
+brew install node@24 mysql@8.4
+export PATH="$(brew --prefix node@24)/bin:$(brew --prefix mysql@8.4)/bin:$PATH"
+brew services start mysql@8.4
+```
+
+### Linux (Ubuntu 24.04 LTS)
+
+In a terminal, install MySQL with APT and start its service. [Ubuntu MySQL guide](https://ubuntu.com/server/docs/how-to/databases/install-mysql/)
+
+```sh
+sudo apt update
+sudo apt install curl mysql-server
+sudo systemctl start mysql.service
+```
+
+Follow the nvm installation guide and reopen your terminal. Then install Node.js 24, which includes npm. [nvm installation guide](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+```sh
+nvm install 24
+nvm use 24
+```
+
+## Install and configure the project
+
+From the project folder, check that the tools are available and install the locked dependencies.
+
+```sh
+node --version
+npm --version
+mysql --version
 npm ci
 ```
 
-Copy `.env.example` to `.env` in the project folder. Set `DB_PASSWORD` to the password you choose for the MySQL app account below and generate a value for `JWT_SECRET` with this command.
+If `.env` does not exist yet, copy `.env.example` from the project folder.
+
+| Terminal | Command |
+| --- | --- |
+| Windows Command Prompt | `copy .env.example .env` |
+| Windows PowerShell | `Copy-Item .env.example .env` |
+| macOS or Linux terminal | `cp .env.example .env` |
+
+Set `DB_PASSWORD` to the password you choose for the MySQL app account below. Generate a random value for `JWT_SECRET` and paste it into `.env`.
 
 ```sh
 node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
@@ -32,15 +80,21 @@ DB_NAME=filmrecension
 JWT_SECRET=your_generated_secret
 ```
 
-Keep `.env` private.
+If your database password contains `#`, enclose the entire password in quotes in `.env`. Dotenv treats an unquoted `#` as the start of a comment. For example, with a fictional password, write `DB_PASSWORD="fictional#password"`.
+
+Keep `.env` private. If MySQL uses a port other than `3306`, set `DB_PORT` to that port.
 
 ## Set up MySQL
 
-Start MySQL. From the project folder, open the MySQL client as an administrator and enter your password when prompted.
+With MySQL running, open the MySQL client as an administrator from the project folder.
 
-```sh
-mysql --user=root --password
-```
+| Platform | Command |
+| --- | --- |
+| Windows, or any install with a MySQL root password | `mysql --user=root --password` (enter the password at the prompt) |
+| macOS with a fresh Homebrew install | `mysql --user=root` |
+| Ubuntu with the default root setup | `sudo mysql` |
+
+If you changed the MySQL port on Windows, add `--port` with that port number to the login command.
 
 **Warning:** `setup.sql` drops and recreates the four FilmRecension tables. Running it again deletes existing users, movies, reviews, and watchlist entries, then reloads the sample movies.
 

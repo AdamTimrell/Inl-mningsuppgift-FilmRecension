@@ -1,3 +1,4 @@
+// Serve the movie catalog and handle listing and creating reviews for a movie.
 const pool = require("../db");
 const Movie = require("../models/Movie");
 const Review = require("../models/Review");
@@ -39,6 +40,7 @@ async function getMovie(req, res) {
     }
 }
 
+// Verify the movie exists so an empty list means it has no reviews.
 async function getMovieReviews(req, res) {
     const movieId = Number(req.params.movieId);
 
@@ -94,6 +96,7 @@ async function addMovieReview(req, res) {
             return res.status(404).json({ error: "Movie not found." });
         }
 
+        // Use the verified user ID as the author and allow one review per user and movie.
         const [existingReviews] = await pool.execute(
             "SELECT id FROM reviews WHERE user_id = ? AND movie_id = ?",
             [req.user.id, movieId]
@@ -118,6 +121,7 @@ async function addMovieReview(req, res) {
 
         return res.status(201).json(review.toJSON());
     } catch (error) {
+        // The unique constraint also catches a concurrent insert after the lookup above.
         if (error.code === "ER_DUP_ENTRY") {
             return res.status(409).json({ error: "You have already reviewed this movie." });
         }

@@ -1,3 +1,4 @@
+// Authenticate bearer tokens and pass the verified user ID to protected controllers.
 const jwt = require("jsonwebtoken");
 
 function authenticateToken(req, res, next) {
@@ -9,6 +10,7 @@ function authenticateToken(req, res, next) {
     }
 
     try {
+        // Verification checks the signature and expiry before the user ID is trusted.
         const payload = jwt.verify(match[1], process.env.JWT_SECRET);
 
         if (!Number.isInteger(payload.userId) || payload.userId < 1) {

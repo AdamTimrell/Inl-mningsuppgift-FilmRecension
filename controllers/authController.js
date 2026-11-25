@@ -1,9 +1,11 @@
+// Register accounts, verify login credentials, and issue tokens for protected routes.
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const pool = require("../db");
 
 async function register(req, res) {
     const { email: rawEmail, password } = req.body || {};
+    // Normalize email the same way at registration and login.
     const email = typeof rawEmail === "string" ? rawEmail.trim().toLowerCase() : "";
 
     if (!email || typeof password !== "string" || password.length === 0) {
@@ -14,6 +16,7 @@ async function register(req, res) {
         return res.status(400).json({ error: "A valid email address is required." });
     }
 
+    // bcrypt uses only the first 72 bytes, so reject longer passwords during registration.
     if (Buffer.byteLength(password, "utf8") > 72) {
         return res.status(400).json({ error: "Password must be no more than 72 bytes." });
     }
@@ -28,6 +31,7 @@ async function register(req, res) {
             return res.status(409).json({ error: "An account with this email already exists." });
         }
 
+        // Store a salted hash so the original password does not need to be kept.
         const passwordHash = await bcrypt.hash(password, 10);
         const [result] = await pool.execute(
             "INSERT INTO users (email, password_hash) VALUES (?, ?)",
@@ -39,6 +43,7 @@ async function register(req, res) {
             email,
         });
     } catch (error) {
+        // The unique email constraint also catches concurrent registrations with the same email.
         if (error.code === "ER_DUP_ENTRY") {
             return res.status(409).json({ error: "An account with this email already exists." });
         }
@@ -66,6 +71,7 @@ async function login(req, res) {
             [email]
         );
 
+        // Compare against the stored hash and use the same error for both credential failures.
         if (users.length === 0 || !(await bcrypt.compare(password, users[0].password_hash))) {
             return res.status(401).json({ error: "Invalid email or password." });
         }

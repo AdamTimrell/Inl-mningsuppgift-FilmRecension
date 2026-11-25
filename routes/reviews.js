@@ -1,3 +1,4 @@
+// Require authentication for edits under /api/reviews. The controller checks ownership.
 const express = require("express");
 const authenticateToken = require("../middleware/auth");
 const { updateReview } = require("../controllers/reviewController");

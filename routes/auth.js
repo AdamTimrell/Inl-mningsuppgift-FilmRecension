@@ -1,3 +1,4 @@
+// Expose public registration and login endpoints under /api/auth.
 const express = require("express");
 const { register, login } = require("../controllers/authController");
 

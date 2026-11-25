@@ -1,3 +1,4 @@
+// Give catalog and watchlist routes the same JSON representation for a movie.
 class Movie {
     constructor({ id, title, genre, release_year }) {
         this.id = id;

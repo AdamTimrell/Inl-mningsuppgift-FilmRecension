@@ -1,3 +1,4 @@
+// Format review responses and share validation between review creation and editing.
 class Review {
     constructor({ id, user_id, movie_id, rating, comment }) {
         this.id = id;
@@ -7,6 +8,7 @@ class Review {
         this.comment = comment;
     }
 
+    // Match the database rating range and reject whitespace-only comments.
     static validationError(rating, comment) {
         if (!Number.isInteger(rating) || rating < 1 || rating > 10) {
             return "Rating must be a whole number from 1 to 10.";

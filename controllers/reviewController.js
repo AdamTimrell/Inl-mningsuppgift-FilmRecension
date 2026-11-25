@@ -1,3 +1,4 @@
+// Update a review after checking that the authenticated user owns it.
 const pool = require("../db");
 const Review = require("../models/Review");
 
@@ -19,6 +20,7 @@ async function updateReview(req, res) {
             return res.status(404).json({ error: "Review not found." });
         }
 
+        // The token establishes who is calling. The stored author ID determines who can edit.
         if (reviews[0].user_id !== req.user.id) {
             return res.status(403).json({ error: "You may only update your own reviews." });
         }
@@ -30,6 +32,7 @@ async function updateReview(req, res) {
         }
 
         const trimmedComment = comment.trim();
+        // Keep the owner filter in the SQL statement so the write stays scoped to this user.
         await pool.execute(
             "UPDATE reviews SET rating = ?, comment = ? WHERE id = ? AND user_id = ?",
             [rating, trimmedComment, id, req.user.id]

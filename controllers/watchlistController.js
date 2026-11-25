@@ -1,7 +1,9 @@
+// List, add, and remove saved movies within the authenticated user's watchlist.
 const pool = require("../db");
 const Movie = require("../models/Movie");
 
 async function getWatchlist(req, res) {
+    // The watchlist stores movie IDs. Join the catalog to return full movie details.
     try {
         const [rows] = await pool.execute(
             `SELECT movies.id, movies.title, movies.genre, movies.release_year
@@ -52,6 +54,7 @@ async function addToWatchlist(req, res) {
 
         return res.status(201).json({ message: "Movie added to your watchlist." });
     } catch (error) {
+        // The composite key also catches a concurrent save after the lookup above.
         if (error.code === "ER_DUP_ENTRY") {
             return res.status(409).json({ error: "Movie is already in your watchlist." });
         }

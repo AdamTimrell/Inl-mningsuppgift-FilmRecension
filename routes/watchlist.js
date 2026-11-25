@@ -1,3 +1,4 @@
+// Require authentication for all /api/watchlist routes so each request has a user ID.
 const express = require("express");
 const authenticateToken = require("../middleware/auth");
 const {

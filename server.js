@@ -1,3 +1,5 @@
+// Configure the API, mount its routers, and start listening after the database check.
+// Load configuration before importing modules that read environment variables.
 require("dotenv").config();
 
 const requiredEnvironmentVariables = [
@@ -28,6 +30,7 @@ const watchlistRoutes = require("./routes/watchlist");
 const app = express();
 const port = Number(process.env.PORT || 3000);
 
+// Cap request bodies so oversized JSON is rejected before reaching a controller.
 app.use(express.json({ limit: "32kb" }));
 app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
@@ -39,6 +42,7 @@ app.use((req, res) => {
 });
 
 app.use((error, req, res, next) => {
+    // Return JSON for body parser errors and keep unexpected error details in server logs.
     if (error.type === "entity.parse.failed") {
         return res.status(400).json({ error: "Invalid JSON request body." });
     }
@@ -58,6 +62,7 @@ async function startServer() {
         return;
     }
 
+    // Verify the database connection before accepting requests.
     try {
         await pool.query("SELECT 1");
     } catch (error) {

@@ -1,14 +1,17 @@
+-- Rebuild the local schema and seed the movie catalog. Existing project data is deleted.
 CREATE DATABASE IF NOT EXISTS filmrecension
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
 USE filmrecension;
 
+-- Drop dependent tables first to respect their foreign keys.
 DROP TABLE IF EXISTS watchlist;
 DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS movies;
 DROP TABLE IF EXISTS users;
 
+-- The unique email identifies an account. Store only the bcrypt hash for its password.
 CREATE TABLE users (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     email VARCHAR(255) NOT NULL,
@@ -26,6 +29,8 @@ CREATE TABLE movies (
     CONSTRAINT check_movie_release_year CHECK (release_year > 0)
 );
 
+-- Each review belongs to a user and a movie. The unique pair allows one review per user per movie.
+-- Cascading deletes remove reviews when either linked record is deleted.
 CREATE TABLE reviews (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id INT UNSIGNED NOT NULL,
@@ -42,6 +47,8 @@ CREATE TABLE reviews (
         FOREIGN KEY (movie_id) REFERENCES movies (id) ON DELETE CASCADE
 );
 
+-- This table links users to movies. Its composite key prevents duplicate saves for a user.
+-- Cascading deletes remove saved entries when either linked record is deleted.
 CREATE TABLE watchlist (
     user_id INT UNSIGNED NOT NULL,
     movie_id INT UNSIGNED NOT NULL,

@@ -1,3 +1,4 @@
+// Expose public movie and review reads under /api/movies. Posting a review requires authentication.
 const express = require("express");
 const authenticateToken = require("../middleware/auth");
 const {
